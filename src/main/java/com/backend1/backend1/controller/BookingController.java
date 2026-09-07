@@ -4,7 +4,6 @@ import com.backend1.backend1.exception.BookingConflictException;
 import com.backend1.backend1.exception.BookingValidationException;
 import com.backend1.backend1.form.SearchForm;
 import com.backend1.backend1.service.BookingService;
-import com.backend1.backend1.service.CustomerService;
 import com.backend1.backend1.service.RoomService;
 import com.backend1.backend1.service.SearchService;
 import jakarta.validation.Valid;
@@ -24,7 +23,6 @@ import java.time.LocalDate;
 public class BookingController {
 
     private final BookingService bookingService;
-    private final CustomerService customerService;
     private final RoomService roomService;
     private final SearchService searchService;
 
@@ -43,7 +41,6 @@ public class BookingController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkOut,
             @RequestParam(required = false, defaultValue = "1") int guests,
             Model model) {
-        model.addAttribute("customers", customerService.findAll());
         model.addAttribute("rooms", roomService.findAll());
         model.addAttribute("selectedRoomId", roomId);
         model.addAttribute("selectedCheckIn", checkIn);
@@ -76,7 +73,6 @@ public class BookingController {
     public String showEditForm(@PathVariable Long id, Model model) {
         var b = bookingService.findById(id);
         model.addAttribute("bookingId", id);
-        model.addAttribute("customers", customerService.findAll());
         model.addAttribute("rooms", roomService.findAll());
         model.addAttribute("selectedCustomerId", b.getCustomerId());
         model.addAttribute("selectedRoomId", b.getRoomId());
@@ -162,7 +158,6 @@ public class BookingController {
                                         Long roomId, LocalDate checkIn, LocalDate checkOut, int guests, Model model) {
         model.addAttribute("errorMessage", error);
         model.addAttribute("bookingId", bookingId);
-        model.addAttribute("customers", customerService.findAll());
         model.addAttribute("rooms", roomService.findAll());
         model.addAttribute("selectedCustomerId", customerId);
         model.addAttribute("selectedRoomId", roomId);

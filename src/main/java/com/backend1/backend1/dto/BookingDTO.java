@@ -10,7 +10,6 @@ import java.time.temporal.ChronoUnit;
 public class BookingDTO {
     private Long id;
     private Long customerId;
-    private String customerFullName;
     private Long roomId;
     private String roomNumber;
     private String roomTypeDisplayName;

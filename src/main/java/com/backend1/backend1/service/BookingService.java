@@ -4,10 +4,8 @@ import com.backend1.backend1.dto.BookingDTO;
 import com.backend1.backend1.exception.BookingConflictException;
 import com.backend1.backend1.exception.BookingValidationException;
 import com.backend1.backend1.model.Booking;
-import com.backend1.backend1.model.Customer;
 import com.backend1.backend1.model.Room;
 import com.backend1.backend1.repository.BookingRepository;
-import com.backend1.backend1.repository.CustomerRepository;
 import com.backend1.backend1.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,7 +19,6 @@ import java.util.List;
 public class BookingService {
 
     private final BookingRepository bookingRepository;
-    private final CustomerRepository customerRepository;
     private final RoomRepository roomRepository;
 
     @Transactional(readOnly = true)
@@ -42,8 +39,7 @@ public class BookingService {
         if (!checkOut.isAfter(checkIn)) {
             throw new BookingValidationException("Utcheckningsdatum måste vara efter incheckningsdatum");
         }
-        Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new BookingValidationException("Kund hittades inte"));
+
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new BookingValidationException("Rum hittades inte"));
         if (room.getCapacity() < numberOfGuests) {
@@ -59,7 +55,7 @@ public class BookingService {
         }
         Booking b = new Booking();
         b.setId(bookingId);
-        b.setCustomer(customer);
+        b.setCustomerId(customerId);
         b.setRoom(room);
         b.setCheckIn(checkIn);
         b.setCheckOut(checkOut);
@@ -80,10 +76,6 @@ public class BookingService {
     private BookingDTO toDTO(Booking b) {
         BookingDTO dto = new BookingDTO();
         dto.setId(b.getId());
-        if (b.getCustomer() != null) {
-            dto.setCustomerId(b.getCustomer().getId());
-            dto.setCustomerFullName(b.getCustomer().getFullName());
-        }
         if (b.getRoom() != null) {
             dto.setRoomId(b.getRoom().getId());
             dto.setRoomNumber(b.getRoom().getRoomNumber());
