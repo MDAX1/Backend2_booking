@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="sv" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"><title>Pensionat</title></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="bk-page-bar">
+    <div class="container">
+        <h2 th:text="${pageTitle}">Kund</h2>
+        <div class="bk-breadcrumb">
+            <a th:href="@{/}">Hem</a>
+            <span class="sep">/</span>
+            <a th:href="@{/customers}">Kunder</a>
+            <span class="sep">/</span>
+            <span th:text="${pageTitle}">Ny kund</span>
+        </div>
+    </div>
+</div>
+
+<main class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="bk-card">
+                <div class="bk-card-header">
+                    <i class="bi bi-person me-2" style="color:var(--bk-blue)"></i>
+                    <span th:text="${pageTitle}">Kunduppgifter</span>
+                </div>
+                <div class="p-4">
+                    <form method="post"
+                          th:action="${customer.id == null ? '/customers' : '/customers/' + customer.id}"
+                          th:object="${customer}">
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="bk-label">Förnamn <span class="text-danger">*</span></label>
+                                <input class="form-control bk-input"
+                                       placeholder="Anna"
+                                       th:classappend="${#fields.hasErrors('firstName')} ? 'is-invalid'"
+                                       th:field="*{firstName}"
+                                       type="text">
+                                <div class="invalid-feedback" th:errors="*{firstName}"></div>
+                            </div>
+                            <div class="col-6">
+                                <label class="bk-label">Efternamn <span class="text-danger">*</span></label>
+                                <input class="form-control bk-input"
+                                       placeholder="Svensson"
+                                       th:classappend="${#fields.hasErrors('lastName')} ? 'is-invalid'"
+                                       th:field="*{lastName}"
+                                       type="text">
+                                <div class="invalid-feedback" th:errors="*{lastName}"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="bk-label">
+                                <i class="bi bi-envelope me-1"></i>E-post
+                            </label>
+                            <input class="form-control bk-input"
+                                   placeholder="anna@exempel.se"
+                                   th:field="*{email}"
+                                   type="email">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="bk-label">
+                                <i class="bi bi-telephone me-1"></i>Telefon
+                            </label>
+                            <input class="form-control bk-input"
+                                   placeholder="070-123 45 67"
+                                   th:field="*{phone}"
+                                   type="text">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="bk-label">
+                                <i class="bi bi-geo-alt me-1"></i>Adress
+                            </label>
+                            <input class="form-control bk-input"
+                                   placeholder="Storgatan 1, Stockholm"
+                                   th:field="*{address}"
+                                   type="text">
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-bk px-4" type="submit">
+                                <i class="bi bi-check-lg me-1"></i>Spara kund
+                            </button>
+                            <a class="btn btn-outline-secondary" th:href="@{/customers}">
+                                <i class="bi bi-x me-1"></i>Avbryt
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

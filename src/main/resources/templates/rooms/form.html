@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="sv" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"><title>Pensionat</title></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="bk-page-bar">
+    <div class="container">
+        <h2 th:text="${pageTitle}">Rum</h2>
+        <div class="bk-breadcrumb">
+            <a th:href="@{/}">Hem</a>
+            <span class="sep">/</span>
+            <a th:href="@{/rooms}">Rum</a>
+            <span class="sep">/</span>
+            <span th:text="${pageTitle}">Nytt rum</span>
+        </div>
+    </div>
+</div>
+
+<main class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="bk-card">
+                <div class="bk-card-header">
+                    <i class="bi bi-door-open me-2" style="color:var(--bk-blue)"></i>
+                    <span th:text="${pageTitle}">Rumsuppgifter</span>
+                </div>
+                <div class="p-4">
+                    <form method="post"
+                          th:action="${room.id == null ? '/rooms' : '/rooms/' + room.id}"
+                          th:object="${room}">
+
+                        <!-- Room number -->
+                        <div class="mb-3">
+                            <label class="bk-label">
+                                <i class="bi bi-hash me-1"></i>Rumsnummer
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input class="form-control bk-input"
+                                   placeholder="t.ex. 101"
+                                   th:classappend="${#fields.hasErrors('roomNumber')} ? 'is-invalid'"
+                                   th:field="*{roomNumber}"
+                                   type="text">
+                            <div class="invalid-feedback" th:errors="*{roomNumber}"></div>
+                        </div>
+
+                        <!-- Room type -->
+                        <div class="mb-3">
+                            <label class="bk-label">
+                                <i class="bi bi-grid me-1"></i>Rumstyp
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select bk-input"
+                                    id="roomTypeSelect"
+                                    th:classappend="${#fields.hasErrors('type')} ? 'is-invalid'"
+                                    th:field="*{type}">
+                                <option value="">– Välj typ –</option>
+                                <option th:each="t : ${roomTypes}"
+                                        th:text="${t.displayName}"
+                                        th:value="${t.name()}"></option>
+                            </select>
+                            <div class="invalid-feedback" th:errors="*{type}"></div>
+                        </div>
+
+                        <!-- Extra beds -->
+                        <div class="mb-3" id="extraBedsGroup">
+                            <label class="bk-label">
+                                <i class="bi bi-plus-circle me-1"></i>Extrasängar
+                                <span class="text-muted fw-normal">(0–2)</span>
+                            </label>
+                            <select class="form-select bk-input" th:field="*{extraBeds}">
+                                <option value="0">0 – inga extrasängar</option>
+                                <option value="1">1 extrasäng (+1 gäst)</option>
+                                <option value="2">2 extrasängar (+2 gäster)</option>
+                            </select>
+                            <div class="mt-1" style="font-size:12px; color:var(--bk-text-light)">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Ej tillämpligt för enkelrum
+                            </div>
+                        </div>
+
+                        <!-- Price -->
+                        <div class="mb-4">
+                            <label class="bk-label">
+                                <i class="bi bi-currency-exchange me-1"></i>Pris per natt
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input class="form-control bk-input"
+                                       min="1" placeholder="800" step="1"
+                                       th:classappend="${#fields.hasErrors('pricePerNight')} ? 'is-invalid'"
+                                       th:field="*{pricePerNight}"
+                                       type="number"
+                                       style="border-radius:4px 0 0 4px">
+                                <span class="input-group-text" style="border-radius:0 4px 4px 0; background:#f5f7fb; font-weight:700">kr</span>
+                                <div class="invalid-feedback" th:errors="*{pricePerNight}"></div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-bk px-4" type="submit">
+                                <i class="bi bi-check-lg me-1"></i>Spara rum
+                            </button>
+                            <a class="btn btn-outline-secondary" th:href="@{/rooms}">
+                                <i class="bi bi-x me-1"></i>Avbryt
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+<script>
+    function toggleExtraBeds(type) {
+        const g = document.getElementById('extraBedsGroup');
+        if (type === 'SINGLE') {
+            g.style.display = 'none';
+            g.querySelector('select').value = '0';
+        } else {
+            g.style.display = '';
+        }
+    }
+    const sel = document.getElementById('roomTypeSelect');
+    if (sel) {
+        toggleExtraBeds(sel.value);
+        sel.addEventListener('change', e => toggleExtraBeds(e.target.value));
+    }
+</script>
+</body>
+</html>

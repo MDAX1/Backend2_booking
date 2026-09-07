@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="sv" xmlns:th="http://www.thymeleaf.org">
+
+<!-- HEAD -->
+<head th:fragment="head(pageTitle)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${pageTitle} + ' – Pensionat'">Pensionat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap"
+          rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Nunito Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f2f2f2;
+            color: #1a1a2e;
+            font-size: 14px;
+            margin: 0
+        }
+
+        a {
+            color: #006ce4;
+            text-decoration: none
+        }
+
+        a:hover {
+            text-decoration: underline
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 16px
+        }
+
+        /* Shared form styles */
+        .bk-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 4px;
+            display: block
+        }
+
+        .bk-input {
+            border: 1px solid #adadad;
+            border-radius: 4px;
+            font-size: 14px;
+            padding: 8px 10px;
+            height: 40px;
+            width: 100%;
+            transition: border-color .15s
+        }
+
+        .bk-input:focus {
+            border-color: #006ce4;
+            box-shadow: 0 0 0 3px rgba(0, 108, 228, .18);
+            outline: none
+        }
+
+        .bk-input.is-invalid {
+            border-color: #cc0000
+        }
+
+        .btn-bk {
+            background: #006ce4;
+            color: #fff !important;
+            border: none;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 14px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: background .15s;
+            display: inline-block;
+            text-decoration: none
+        }
+
+        .btn-bk:hover {
+            background: #0057b8;
+            color: #fff !important;
+            text-decoration: none
+        }
+
+        .btn-bk-yellow {
+            background: #006ce4;
+            color: #fff !important;
+            border: none;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 14px;
+            padding: 8px 16px;
+            cursor: pointer;
+            display: inline-block;
+            text-decoration: none
+        }
+
+        .btn-bk-yellow:hover {
+            background: #0057b8;
+            color: #fff !important;
+            text-decoration: none
+        }
+
+        .bk-card {
+            background: #fff;
+            border: 1px solid #e7e7e7;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+            overflow: hidden
+        }
+
+        .bk-card-header {
+            background: #fff;
+            padding: 14px 18px;
+            border-bottom: 1px solid #e7e7e7;
+            font-weight: 800;
+            font-size: 16px
+        }
+
+        .bk-table {
+            margin: 0;
+            width: 100%;
+            border-collapse: collapse
+        }
+
+        .bk-table thead th {
+            background: #f5f7fb;
+            color: #444;
+            font-weight: 800;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            border-bottom: 2px solid #e7e7e7;
+            padding: 10px 12px;
+            white-space: nowrap
+        }
+
+        .bk-table td {
+            vertical-align: middle;
+            font-size: 13.5px;
+            padding: 10px 12px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #1a1a2e
+        }
+
+        .bk-table tbody tr:last-child td {
+            border-bottom: none
+        }
+
+        .bk-table tbody tr:hover {
+            background: #f8faff
+        }
+
+        .bk-alert-success {
+            background: #e8f5e9;
+            border: 1px solid #b2dfdb;
+            color: #1b5e20;
+            border-radius: 4px;
+            padding: 10px 14px;
+            font-size: 13.5px;
+            font-weight: 600
+        }
+
+        .bk-alert-danger {
+            background: #fff3f3;
+            border: 1px solid #ffcdd2;
+            color: #b71c1c;
+            border-radius: 4px;
+            padding: 10px 14px;
+            font-size: 13.5px;
+            font-weight: 600
+        }
+
+        .badge-type-single {
+            background: #ebf3ff;
+            color: #003580;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 3px
+        }
+
+        .badge-type-double {
+            background: #e8f5e9;
+            color: #1b5e20;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 3px
+        }
+
+        .bk-page-bar {
+            background: #003580;
+            color: #fff;
+            padding: 14px 0
+        }
+
+        .bk-page-bar h2 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin: 0;
+            color: #fff
+        }
+
+        .bk-breadcrumb {
+            font-size: 12px;
+            color: rgba(255, 255, 255, .65);
+            margin-top: 3px;
+            display: flex;
+            align-items: center;
+            gap: 5px
+        }
+
+        .bk-breadcrumb a {
+            color: rgba(255, 255, 255, .8);
+            text-decoration: none
+        }
+
+        .bk-breadcrumb a:hover {
+            color: #fff;
+            text-decoration: underline
+        }
+
+        /* Room result card */
+        .room-result-card {
+            background: #fff;
+            border: 1px solid #e7e7e7;
+            border-radius: 8px;
+            display: flex;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .1)
+        }
+
+        .room-result-img-wrap {
+            position: relative;
+            min-width: 220px;
+            max-width: 220px;
+            background: #1a3a5c;
+            flex-shrink: 0
+        }
+
+        .room-result-img {
+            width: 100%;
+            height: 100%;
+            min-height: 185px;
+            object-fit: cover;
+            display: block
+        }
+
+        .room-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: #cc0000;
+            color: #fff;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 3px 8px
+        }
+
+        .room-result-body {
+            flex: 1;
+            padding: 16px;
+            border-right: 1px solid #e7e7e7
+        }
+
+        .room-result-name {
+            font-size: 17px;
+            font-weight: 800;
+            color: #006ce4;
+            margin-bottom: 4px
+        }
+
+        .room-result-price {
+            min-width: 190px;
+            flex-shrink: 0;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: space-between
+        }
+
+        /* Filter */
+        .filter-card {
+            background: #fff;
+            border: 1px solid #e7e7e7;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+            position: sticky;
+            top: 108px
+        }
+
+        /* Search strip */
+        .bk-search-strip {
+            background: #febb02;
+            border-radius: 4px;
+            border: 3px solid #c89501;
+            padding: 8px;
+            display: flex;
+            gap: 8px;
+            align-items: stretch;
+            flex-wrap: wrap;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, .3);
+            margin-top: 20px
+        }
+
+        .bk-search-field {
+            background: #fff;
+            border-radius: 4px;
+            padding: 8px 12px;
+            min-width: 160px;
+            flex: 1 1 160px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px
+        }
+
+        .bk-search-field label {
+            font-size: 11px;
+            font-weight: 800;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            margin: 0;
+            display: block
+        }
+
+        .bk-search-field .form-control, .bk-search-field .form-select {
+            border: none;
+            padding: 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a1a2e;
+            height: 26px;
+            box-shadow: none;
+            background: transparent
+        }
+
+        .bk-search-field .form-control:focus, .bk-search-field .form-select:focus {
+            box-shadow: none;
+            outline: none
+        }
+
+        .btn-bk-search {
+            background: #006ce4;
+            color: #fff;
+            font-weight: 800;
+            font-size: 16px;
+            border: none;
+            min-height: 52px;
+            padding: 0 28px;
+            border-radius: 4px;
+            white-space: nowrap;
+            cursor: pointer;
+            flex-shrink: 0
+        }
+
+        .btn-bk-search:hover {
+            background: #0057b8;
+            color: #fff
+        }
+
+        /* Nav mobile */
+        @media (max-width: 991px) {
+            #bk-nav-actions {
+                display: none !important
+            }
+
+            #bk-hamburger {
+                display: flex !important
+            }
+
+            .room-result-card {
+                flex-direction: column
+            }
+
+            .room-result-img-wrap {
+                min-width: 100%;
+                max-width: 100%
+            }
+
+            .room-result-price {
+                min-width: 100%;
+                align-items: stretch
+            }
+
+            .room-result-body {
+                border-right: none;
+                border-bottom: 1px solid #e7e7e7
+            }
+        }
+    </style>
+</head>
+
+<!-- ═══════════════════════════════════════════
+     NAVBAR  — exact Booking.com two-row layout
+     ═══════════════════════════════════════════ -->
+<header th:fragment="navbar"
+        style="position:sticky;top:0;z-index:1000;background:#003580;
+               font-family:'Nunito Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+
+    <!-- Row 1: Brand + actions -->
+    <div style="background:#003580;border-bottom:1px solid rgba(255,255,255,.12)">
+        <div style="max-width:1100px;margin:0 auto;padding:0 16px;
+                height:50px;display:flex;align-items:center;gap:8px">
+
+            <!-- Logo -->
+            <a th:href="@{/}"
+               style="font-size:1.45rem;font-weight:800;color:#fff;text-decoration:none;
+                letter-spacing:-.3px;white-space:nowrap;margin-right:8px;flex-shrink:0">
+                Pensionat<span style="color:#febb02">.</span>com
+            </a>
+
+            <!-- Desktop right actions -->
+            <div id="bk-nav-actions"
+                 style="display:flex;align-items:center;gap:4px;margin-left:auto;flex-shrink:0">
+        <span style="color:rgba(255,255,255,.85);font-size:13px;font-weight:600;
+                     padding:5px 10px;cursor:default">
+          &#127480;&#127466; SEK
+        </span>
+                <a th:href="@{/rooms/new}"
+                   style="color:rgba(255,255,255,.88);font-size:13px;font-weight:600;
+                  padding:5px 10px;text-decoration:none;border-radius:2px;
+                  transition:background .15s">
+                    Registrera ditt boende
+                </a>
+                <a th:href="@{/customers/new}"
+                   style="background:transparent;border:1px solid rgba(255,255,255,.6);color:#fff;
+                  border-radius:2px;font-size:13px;font-weight:700;padding:6px 14px;
+                  text-decoration:none;margin-left:4px">
+                    Skapa konto
+                </a>
+                <a th:href="@{/bookings/new}"
+                   style="background:#006ce4;border:1px solid #006ce4;color:#fff;border-radius:2px;
+                  font-size:13px;font-weight:700;padding:6px 14px;text-decoration:none;
+                  margin-left:2px">
+                    Logga in
+                </a>
+            </div>
+
+            <!-- Hamburger (mobile) -->
+            <button id="bk-hamburger" onclick="bkToggle()"
+                    style="display:none;background:none;border:1px solid rgba(255,255,255,.5);
+                     color:#fff;border-radius:3px;padding:4px 10px;font-size:20px;
+                     cursor:pointer;margin-left:auto;line-height:1;align-items:center;
+                     justify-content:center">
+                &#9776;
+            </button>
+        </div>
+    </div>
+
+    <!-- Row 2: Tab navigation -->
+    <div style="background:#003580;overflow-x:auto;scrollbar-width:none">
+        <div style="max-width:1100px;margin:0 auto;padding:0 16px;
+                display:flex;gap:0;min-width:max-content">
+
+            <a th:href="@{/bookings/search}"
+               style="display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.85);
+                text-decoration:none;font-size:13.5px;font-weight:600;padding:10px 16px;
+                white-space:nowrap;border-bottom:2px solid #fff;color:#fff">
+                &#127968; <span>Boende</span>
+            </a>
+            <a th:href="@{/bookings}"
+               style="display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.75);
+                text-decoration:none;font-size:13.5px;font-weight:600;padding:10px 16px;
+                white-space:nowrap;border-bottom:2px solid transparent">
+                &#128197; <span>Bokningar</span>
+            </a>
+            <a th:href="@{/customers}"
+               style="display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.75);
+                text-decoration:none;font-size:13.5px;font-weight:600;padding:10px 16px;
+                white-space:nowrap;border-bottom:2px solid transparent">
+                &#128101; <span>Kunder</span>
+            </a>
+            <a th:href="@{/rooms}"
+               style="display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.75);
+                text-decoration:none;font-size:13.5px;font-weight:600;padding:10px 16px;
+                white-space:nowrap;border-bottom:2px solid transparent">
+                &#128682; <span>Rum</span>
+            </a>
+
+        </div>
+    </div>
+
+    <!-- Mobile slide-down menu -->
+    <div id="bk-mobile-menu"
+         style="display:none;flex-direction:column;background:#00224f;
+              border-top:1px solid rgba(255,255,255,.12)">
+        <a th:href="@{/bookings/search}"
+           style="color:rgba(255,255,255,.9);text-decoration:none;font-size:15px;font-weight:600;
+              padding:13px 20px;border-bottom:1px solid rgba(255,255,255,.07)">
+            &#127968; Sök lediga rum
+        </a>
+        <a th:href="@{/bookings}"
+           style="color:rgba(255,255,255,.9);text-decoration:none;font-size:15px;font-weight:600;
+              padding:13px 20px;border-bottom:1px solid rgba(255,255,255,.07)">
+            &#128197; Bokningar
+        </a>
+        <a th:href="@{/customers}"
+           style="color:rgba(255,255,255,.9);text-decoration:none;font-size:15px;font-weight:600;
+              padding:13px 20px;border-bottom:1px solid rgba(255,255,255,.07)">
+            &#128101; Kunder
+        </a>
+        <a th:href="@{/rooms}"
+           style="color:rgba(255,255,255,.9);text-decoration:none;font-size:15px;font-weight:600;
+              padding:13px 20px;border-bottom:1px solid rgba(255,255,255,.07)">
+            &#128682; Rum
+        </a>
+        <div style="border-top:1px solid rgba(255,255,255,.15);margin:0"></div>
+        <a th:href="@{/customers/new}"
+           style="color:rgba(255,255,255,.9);text-decoration:none;font-size:15px;font-weight:600;
+              padding:13px 20px;border-bottom:1px solid rgba(255,255,255,.07)">
+            &#10133; Ny kund
+        </a>
+        <a th:href="@{/bookings/new}"
+           style="color:rgba(255,255,255,.9);text-decoration:none;font-size:15px;font-weight:600;
+              padding:13px 20px">
+            &#10133; Ny bokning
+        </a>
+    </div>
+
+    <script>
+        function bkToggle() {
+            var m = document.getElementById('bk-mobile-menu');
+            var b = document.getElementById('bk-hamburger');
+            if (m.style.display === 'flex') {
+                m.style.display = 'none';
+                b.innerHTML = '&#9776;'
+            } else {
+                m.style.display = 'flex';
+                b.innerHTML = '&#10005;'
+            }
+        }
+    </script>
+</header>
+
+<!-- ALERTS -->
+<div th:fragment="alerts" class="mb-3">
+    <div style="background:#e8f5e9;border:1px solid #b2dfdb;color:#1b5e20;
+              border-radius:4px;padding:10px 14px;font-size:13.5px;font-weight:600;
+              display:flex;justify-content:space-between;align-items:center"
+         th:if="${successMessage}">
+        <span>&#10003; <span th:text="${successMessage}"></span></span>
+        <button style="background:none;border:none;cursor:pointer;font-size:16px;color:#1b5e20"
+                onclick="this.parentElement.remove()">&#10005;
+        </button>
+    </div>
+    <div style="background:#fff3f3;border:1px solid #ffcdd2;color:#b71c1c;
+              border-radius:4px;padding:10px 14px;font-size:13.5px;font-weight:600;
+              display:flex;justify-content:space-between;align-items:center"
+         th:if="${errorMessage}">
+        <span>&#9888; <span th:text="${errorMessage}"></span></span>
+        <button style="background:none;border:none;cursor:pointer;font-size:16px;color:#b71c1c"
+                onclick="this.parentElement.remove()">&#10005;
+        </button>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     FOOTER — exact Booking.com layout
+     ═══════════════════════════════════════════ -->
+<footer th:fragment="footer"
+        style="font-family:'Nunito Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+               font-size:13px;margin-top:48px">
+
+    <!-- White popular links section -->
+    <div style="background:#fff;border-top:1px solid #e7e7e7;padding:28px 0 20px">
+        <div style="max-width:1100px;margin:0 auto;padding:0 16px">
+            <div style="font-size:16px;font-weight:800;color:#1a1a2e;margin-bottom:14px">
+                Populärt bland resenärer
+            </div>
+
+            <!-- Tab strip -->
+            <div style="display:flex;gap:0;border-bottom:1px solid #e7e7e7;
+                  margin-bottom:16px;flex-wrap:wrap">
+                <button onclick="bkFooterTab(this)"
+                        style="background:none;border:none;font-size:13.5px;font-weight:700;
+                       color:#006ce4;cursor:pointer;padding:8px 14px;
+                       border-bottom:2px solid #006ce4;margin-bottom:-1px">
+                    Inriksstäder
+                </button>
+                <button onclick="bkFooterTab(this)"
+                        style="background:none;border:none;font-size:13.5px;font-weight:600;
+                       color:#6b6b6b;cursor:pointer;padding:8px 14px;
+                       border-bottom:2px solid transparent;margin-bottom:-1px">
+                    Internationella städer
+                </button>
+                <button onclick="bkFooterTab(this)"
+                        style="background:none;border:none;font-size:13.5px;font-weight:600;
+                       color:#6b6b6b;cursor:pointer;padding:8px 14px;
+                       border-bottom:2px solid transparent;margin-bottom:-1px">
+                    Regioner
+                </button>
+                <button onclick="bkFooterTab(this)"
+                        style="background:none;border:none;font-size:13.5px;font-weight:600;
+                       color:#6b6b6b;cursor:pointer;padding:8px 14px;
+                       border-bottom:2px solid transparent;margin-bottom:-1px">
+                    Länder
+                </button>
+                <button onclick="bkFooterTab(this)"
+                        style="background:none;border:none;font-size:13.5px;font-weight:600;
+                       color:#6b6b6b;cursor:pointer;padding:8px 14px;
+                       border-bottom:2px solid transparent;margin-bottom:-1px">
+                    Boenden
+                </button>
+            </div>
+
+            <!-- City link grid -->
+            <div id="footer-link-grid"
+                 style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px 16px;
+                  max-height:96px;overflow:hidden;transition:max-height .4s">
+                <a href="#" style="color:#006ce4;font-size:13px;padding:2px 0;display:block">Boende i Stockholm</a>
+                <a href="#" style="color:#006ce4;font-size:13px;padding:2px 0;display:block">Boende i Göteborg</a>
+                <a href="#" style="color:#006ce4;font-size:13px;padding:2px 0;display:block">Boende i Malmö</a>
+                <a href="#" style="color:#006ce4;font-size:13px;padding:2px 0;display:block">Boende i Uppsala</a>
+                <a href="#" style="color:#006ce4;font-size:13px;padding:2px 0;display:block">Boende i Linköping</a>
+                <a href="#" style="color:#006ce4;font-size:13px;padding:2px 0;display:block">Boende i Örebro</a>
+                <a href="#" style="color:#006ce4;font-size:13px;padding:2px 0;display:block">Boende i Västerås</a>
+                <a href="#" style="color:#006ce4;font-size:13px;padding:2px 0;display:block">Boende i Helsingborg</a>
+                <a href="#" style="color:#006ce4;font-size:13px;padding:2px 0;display:block">Boende i Norrköping</a>
+                <a href="#" style="color:#006ce4;font-size:13px;padding:2px 0;display:block">Boende i Sundsvall</a>
+                <a href="#" style="color:#006ce4;font-size:13px;padding:2px 0;display:block">Boende i Gävle</a>
+                <a href="#" style="color:#006ce4;font-size:13px;padding:2px 0;display:block">Boende i Jönköping</a>
+                <a href="#" style="color:#006ce4;font-size:13px;padding:2px 0;display:block">Boende i Umeå</a>
+                <a href="#" style="color:#006ce4;font-size:13px;padding:2px 0;display:block">Boende i Lund</a>
+                <a href="#" style="color:#006ce4;font-size:13px;padding:2px 0;display:block">Boende i Borås</a>
+            </div>
+
+            <button onclick="bkShowMore()"
+                    style="background:none;border:none;color:#006ce4;font-size:13px;
+                     font-weight:700;cursor:pointer;padding:8px 0;display:flex;align-items:center;gap:4px"
+                    id="footer-show-more">
+                &#9660; Visa mer
+            </button>
+
+            <!-- Separator -->
+            <hr style="border:none;border-top:1px solid #e7e7e7;margin:14px 0">
+
+            <!-- Tag links -->
+            <div style="display:flex;flex-wrap:wrap;gap:4px;color:#6b6b6b;font-size:12px">
+                <span>Länder</span><span style="color:#ccc">·</span>
+                <span>Områden</span><span style="color:#ccc">·</span>
+                <span>Städer</span><span style="color:#ccc">·</span>
+                <span>Distrikt</span><span style="color:#ccc">·</span>
+                <span>Flygplatser</span><span style="color:#ccc">·</span>
+                <span>Hotell</span><span style="color:#ccc">·</span>
+                <span>Semesterhus</span><span style="color:#ccc">·</span>
+                <span>Lägenheter</span><span style="color:#ccc">·</span>
+                <span>Resorter</span><span style="color:#ccc">·</span>
+                <span>Villor</span><span style="color:#ccc">·</span>
+                <span>Vandrarhem</span><span style="color:#ccc">·</span>
+                <span>B&amp;Bs</span><span style="color:#ccc">·</span>
+                <span>Pensionat</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dark 5-column section -->
+    <div style="background:#003154;padding:32px 0 24px">
+        <div style="max-width:1100px;margin:0 auto;padding:0 16px;
+                display:grid;grid-template-columns:repeat(5,1fr);gap:24px">
+
+            <div>
+                <div style="color:#fff;font-size:12px;font-weight:800;text-transform:uppercase;
+                    letter-spacing:.06em;margin-bottom:12px">Hjälp och support
+                </div>
+                <div style="display:flex;flex-direction:column;gap:7px">
+                    <a href="#" style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Hantera dina
+                        resor</a>
+                    <a href="#" style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Kontakta
+                        kundservice</a>
+                    <a href="#" style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Information om
+                        säkerhet</a>
+                </div>
+            </div>
+
+            <div>
+                <div style="color:#fff;font-size:12px;font-weight:800;text-transform:uppercase;
+                    letter-spacing:.06em;margin-bottom:12px">Upptäck mer
+                </div>
+                <div style="display:flex;flex-direction:column;gap:7px">
+                    <a href="#" style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Lojalitetsprogrammet</a>
+                    <a th:href="@{/bookings/search}"
+                       style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Sök lediga rum</a>
+                    <a href="#" style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Resartiklar</a>
+                    <a href="#" style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Restaurangbokningar</a>
+                </div>
+            </div>
+
+            <div>
+                <div style="color:#fff;font-size:12px;font-weight:800;text-transform:uppercase;
+                    letter-spacing:.06em;margin-bottom:12px">Villkor och inställningar
+                </div>
+                <div style="display:flex;flex-direction:column;gap:7px">
+                    <a href="#" style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Hantera
+                        cookies</a>
+                    <a href="#"
+                       style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Sekretesspolicy</a>
+                    <a href="#"
+                       style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Användarvillkor</a>
+                    <a href="#" style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Hållbarhetsdeklaration</a>
+                    <a href="#" style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Mänskliga
+                        rättigheter</a>
+                </div>
+            </div>
+
+            <div>
+                <div style="color:#fff;font-size:12px;font-weight:800;text-transform:uppercase;
+                    letter-spacing:.06em;margin-bottom:12px">För partners
+                </div>
+                <div style="display:flex;flex-direction:column;gap:7px">
+                    <a th:href="@{/rooms/new}" style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Registrera
+                        ditt boende</a>
+                    <a href="#" style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Logga in på
+                        extranätet</a>
+                    <a href="#" style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Hjälpsidan för
+                        partners</a>
+                    <a href="#" style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Bli
+                        affiliatepartner</a>
+                </div>
+            </div>
+
+            <div>
+                <div style="color:#fff;font-size:12px;font-weight:800;text-transform:uppercase;
+                    letter-spacing:.06em;margin-bottom:12px">Om oss
+                </div>
+                <div style="display:flex;flex-direction:column;gap:7px">
+                    <a href="#" style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Om Pensionat</a>
+                    <a href="#" style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Hur vi
+                        jobbar</a>
+                    <a href="#" style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Hållbarhet</a>
+                    <a href="#" style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Pressrum</a>
+                    <a href="#" style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Lediga jobb</a>
+                    <a href="#" style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Investerarrelationer</a>
+                    <a href="#"
+                       style="color:rgba(255,255,255,.72);font-size:13px;text-decoration:none">Företagskontakt</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div style="background:#002244;border-top:1px solid rgba(255,255,255,.1);padding:14px 0">
+        <div style="max-width:1100px;margin:0 auto;padding:0 16px;
+                display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+
+            <button style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);
+                     color:#fff;border-radius:2px;font-size:13px;font-weight:600;
+                     padding:5px 12px;cursor:pointer;white-space:nowrap;flex-shrink:0">
+                &#127480;&#127466; SEK
+            </button>
+
+            <div style="color:rgba(255,255,255,.5);font-size:11px;line-height:1.5;flex:1">
+                Pensionat är en plattform för bokningshantering av pensionat och mindre hotell.<br>
+                Copyright &copy; 2024&ndash;2025 Pensionat<span style="color:#febb02">.</span>com. Alla rättigheter
+                förbehållna.
+            </div>
+
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <span style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+                     color:rgba(255,255,255,.7);font-size:11px;font-weight:700;
+                     padding:3px 10px;border-radius:3px">Pensionat</span>
+                <span style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+                     color:rgba(255,255,255,.7);font-size:11px;font-weight:700;
+                     padding:3px 10px;border-radius:3px">priceline</span>
+                <span style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+                     color:rgba(255,255,255,.7);font-size:11px;font-weight:700;
+                     padding:3px 10px;border-radius:3px">KAYAK</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function bkFooterTab(el) {
+            var tabs = el.parentElement.querySelectorAll('button');
+            tabs.forEach(function (t) {
+                t.style.color = '#6b6b6b';
+                t.style.borderBottom = '2px solid transparent';
+                t.style.fontWeight = '600';
+            });
+            el.style.color = '#006ce4';
+            el.style.borderBottom = '2px solid #006ce4';
+            el.style.fontWeight = '700';
+        }
+
+        function bkShowMore() {
+            var g = document.getElementById('footer-link-grid');
+            var b = document.getElementById('footer-show-more');
+            if (g.style.maxHeight === 'none') {
+                g.style.maxHeight = '96px';
+                b.innerHTML = '&#9660; Visa mer';
+            } else {
+                g.style.maxHeight = 'none';
+                b.innerHTML = '&#9650; Visa färre';
+            }
+        }
+    </script>
+
+    <!-- Responsive footer -->
+    <style>
+        @media (max-width: 767px) {
+            #footer-link-grid {
+                grid-template-columns:repeat(2, 1fr) !important
+            }
+
+            footer > div:nth-child(2) > div > div[style*="grid-template-columns:repeat(5"] {
+                grid-template-columns:repeat(2, 1fr) !important
+            }
+        }
+
+        @media (max-width: 575px) {
+            footer > div:nth-child(2) > div > div[style*="grid-template-columns:repeat(5"] {
+                grid-template-columns:1fr 1fr !important
+            }
+        }
+    </style>
+</footer>
+
+<!-- SCRIPTS -->
+<div th:fragment="scripts">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</div>
+
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="sv" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Bokningar')}"><title>Pensionat</title></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="bk-page-bar">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div>
+            <h2><i class="bi bi-calendar-check me-2"></i>Bokningar</h2>
+            <div class="bk-breadcrumb">
+                <a th:href="@{/}">Hem</a>
+                <span class="sep">/</span>
+                <span>Bokningar</span>
+            </div>
+        </div>
+        <a class="btn-nav-solid" style="padding:8px 18px" th:href="@{/bookings/new}">
+            <i class="bi bi-plus-lg me-1"></i>Ny bokning
+        </a>
+    </div>
+</div>
+
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <!-- Empty state -->
+    <div class="bk-card p-5 text-center"
+         th:if="${bookings.isEmpty()}">
+        <div style="font-size:3rem; margin-bottom:12px">📋</div>
+        <h5 class="fw-bold mb-2">Inga bokningar registrerade</h5>
+        <p class="text-muted mb-3">Kom igång genom att söka efter lediga rum och skapa din första bokning.</p>
+        <a class="btn btn-bk" th:href="@{/bookings/search}">
+            <i class="bi bi-search me-1"></i>Sök lediga rum
+        </a>
+    </div>
+
+    <!-- Summary strip -->
+    <div class="row g-3 mb-3" th:unless="${bookings.isEmpty()}">
+        <div class="col-sm-6 col-lg-3">
+            <div style="background:#fff; border:1px solid var(--bk-border); border-radius:8px; padding:12px 16px; display:flex; align-items:center; gap:12px; box-shadow:0 2px 8px rgba(0,0,0,.08)">
+                <i class="bi bi-calendar2-check-fill" style="font-size:1.5rem; color:var(--bk-blue)"></i>
+                <div>
+                    <div style="font-size:20px; font-weight:800; color:var(--bk-navy)" th:text="${bookings.size()}">0
+                    </div>
+                    <div style="font-size:12px; color:var(--bk-text-light)">Totalt bokningar</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bookings table -->
+    <div class="bk-card" th:unless="${bookings.isEmpty()}">
+        <div class="bk-card-header d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-table me-2"></i>Alla bokningar</span>
+            <span class="text-muted" style="font-size:12px; font-weight:400"
+                  th:text="${bookings.size() + ' poster'}"></span>
+        </div>
+        <div style="overflow-x:auto">
+            <table class="bk-table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Kund</th>
+                    <th>Rum</th>
+                    <th>Incheckning</th>
+                    <th>Utcheckning</th>
+                    <th class="text-center">Nätter</th>
+                    <th class="text-center">Gäster</th>
+                    <th class="text-end">Totalpris</th>
+                    <th class="text-end">Åtgärder</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="b : ${bookings}">
+                    <td>
+                        <span style="font-size:11px; color:#999; font-weight:600"
+                              th:text="'#' + ${b.id}"></span>
+                    </td>
+                    <td>
+                        <div class="fw-bold" th:text="${b.customerFullName}"></div>
+                    </td>
+                    <td>
+                        <span class="fw-semibold" th:text="${'Rum ' + b.roomNumber}"></span>
+                        <span class="badge-type-single ms-1"
+                              th:if="${b.roomTypeDisplayName != null}"
+                              th:text="${b.roomTypeDisplayName}"></span>
+                    </td>
+                    <td>
+                        <span th:text="${#temporals.format(b.checkIn,'yyyy-MM-dd')}"></span>
+                    </td>
+                    <td>
+                        <span th:text="${#temporals.format(b.checkOut,'yyyy-MM-dd')}"></span>
+                    </td>
+                    <td class="text-center">
+                        <span class="fw-bold" th:text="${b.nights}"></span>
+                        <span style="font-size:11px; color:#999"> nätter</span>
+                    </td>
+                    <td class="text-center">
+                        <i class="bi bi-person-fill" style="color:var(--bk-text-light); font-size:12px"></i>
+                        <span th:text="${b.numberOfGuests}"></span>
+                    </td>
+                    <td class="text-end">
+                        <span class="fw-bold" style="color:var(--bk-navy); font-size:15px"
+                              th:text="${#numbers.formatDecimal(b.totalPrice,1,'COMMA',0,'POINT') + ' kr'}"></span>
+                    </td>
+                    <td class="text-end">
+                        <div class="d-flex gap-1 justify-content-end">
+                            <a class="btn btn-bk btn-sm"
+                               th:href="@{/bookings/{id}/edit(id=${b.id})}">
+                                <i class="bi bi-pencil me-1"></i>Ändra
+                            </a>
+                            <form class="d-inline" method="post"
+                                  onsubmit="return confirm('Avboka denna bokning?');"
+                                  th:action="@{/bookings/{id}/delete(id=${b.id})}">
+                                <button class="btn btn-outline-danger btn-sm" type="submit">
+                                    <i class="bi bi-x-lg me-1"></i>Avboka
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>
