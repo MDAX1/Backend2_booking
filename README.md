@@ -56,8 +56,11 @@ publika HTTPS-basadress (utan `/api` eller portnummer). Generera en publik domä
 port 8081 och skicka basadressen till Joakim, som sätter den som `BOOKING_SERVICE_URL`.
 `JWT_SECRET` måste vara exakt samma som kundtjänstens; få värdet från Joakim innan deployment.
 
-Hela systemets konfiguration beskrivs i
-[kundtjänstens Railway-guide](https://github.com/joakim-epp/backend_2-customer_service/blob/main/RAILWAY.md).
+Kundtjänsten är deployad på Railway. Använd följande basadress:
+
+```dotenv
+CUSTOMER_SERVICE_URL=https://customer-service-production-bbb4.up.railway.app
+```
 
 ## Projektbeskrivning
 
