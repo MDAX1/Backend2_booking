@@ -1,5 +1,67 @@
 # Pensionat Bokningssystem
 
+## JWT för API-anrop
+
+Alla `/api/**` kräver `Authorization: Bearer <token>`, inklusive
+`GET /api/bookings/count?customerId=42&status=ACTIVE`. Även befintliga POST-endpoints som
+skapar, ändrar och avbokar bokningar eller ändrar rum kräver token (`/bookings/**` och
+`/rooms/**`). Sökningen `POST /bookings/search` är publik eftersom den bara läser data.
+Hämta token från kundtjänstens
+`POST /api/auth/login` med JSON-fälten `username` och `password`; svaret innehåller `token`.
+
+Bokningstjänsten validerar HS256-signaturen, issuer `pensionat-customer-service`, audience
+`pensionat` och giltighetstiden. Token måste ha `exp`; saknad, utgången eller ogiltig token
+ger HTTP 401. Vid kunduppslag vidarebefordras anropets validerade token till kundtjänsten.
+Token i URL-parametrar accepteras inte, och autentisering sparas inte i en session.
+
+Sätt `JWT_SECRET` till **samma Base64-kodade nyckel som kundtjänsten** (minst 32 byte).
+Tjänsten vägrar starta om nyckeln saknas eller är ogiltig. Ingen nyckel ska checkas in.
+
+```bash
+# JWT_SECRET ska redan vara satt till kundtjänstens nyckel.
+./mvnw spring-boot:run
+
+# TOKEN är token från kundtjänstens inloggningssvar.
+curl -H "Authorization: Bearer $TOKEN" \
+  'http://localhost:8081/api/bookings/count?customerId=42&status=ACTIVE'
+```
+
+För Docker Compose ska `booking-service.environment.JWT_SECRET` sättas till `${JWT_SECRET}`.
+För Kubernetes ska booking-containern läsa `JWT_SECRET` från samma Secret som kundtjänsten
+(`pensionat-secrets`, nyckeln `jwt-secret`). Dessa konfigurationer finns i kundtjänstens repo.
+
+Det här stödet gäller Bearer-token i anrop. Ingen inloggningssida läggs till.
+GET-anrop till Thymeleaf-sidorna (`/`, `/rooms/**`, `/bookings/**`), statiska resurser,
+Swagger och hälsokontroller behåller sin publika åtkomst. Vanliga webbläsarformulär skickar
+ingen Bearer-token och får därför 401 när de ändrar data. Använd Postman/curl med headern;
+stöd för autentisering i webbläsaren är ett separat inloggningsflöde.
+
+Kör testerna med Java 21: `./mvnw test`. JWT-testerna använder signerade testtoken och
+kontrollerar både godkända och nekade anrop; kundklientens tokenvidarebefordran testas separat.
+
+## Docker och Railway
+
+`Dockerfile` bygger Java 21-applikationen och dess Thymeleaf-frontend. `railway.json`
+väljer Dockerfile-byggaren och hälsokontrollen `/actuator/health/readiness`.
+
+```bash
+docker build -t booking-service .
+```
+
+Deploya repot som en egen Railway-tjänst med egen PostgreSQL-databas på bokningsansvariges
+konto. Kund- och notifieringstjänsten finns på Joakims konto i ett annat projekt. Sätt `PORT=8081`,
+`SPRING_DATASOURCE_URL` till databasens JDBC-adress, `SPRING_DATASOURCE_USERNAME`,
+`SPRING_DATASOURCE_PASSWORD`, `JWT_SECRET` och `CUSTOMER_SERVICE_URL` till kundtjänstens
+publika HTTPS-basadress (utan `/api` eller portnummer). Generera en publik domän med target
+port 8081 och skicka basadressen till Joakim, som sätter den som `BOOKING_SERVICE_URL`.
+`JWT_SECRET` måste vara exakt samma som kundtjänstens; få värdet från Joakim innan deployment.
+
+Kundtjänsten är deployad på Railway. Använd följande basadress:
+
+```dotenv
+CUSTOMER_SERVICE_URL=https://customer-service-production-bbb4.up.railway.app
+```
+
 ## Projektbeskrivning
 
 Detta projekt är ett webbaserat bokningssystem utvecklat för ett mindre pensionat. Syftet med systemet är att effektivisera hanteringen av kunder, rum och bokningar genom en användarvänlig webbapplikation byggd med Spring Boot och Thymeleaf.
@@ -120,4 +182,5 @@ Relationer:
 ## Klona projektet
 
 ```bash
-git clone https://github.com/ditt-användarnamn/pensionat-booking-system.git
+git clone https://github.com/MDAX1/Backend2_booking.git
+```

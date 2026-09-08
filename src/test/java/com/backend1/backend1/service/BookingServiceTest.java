@@ -1,5 +1,7 @@
 package com.backend1.backend1.service;
 
+import com.backend1.backend1.client.CustomerClient;
+import com.backend1.backend1.dto.CustomerResponse;
 import com.backend1.backend1.dto.BookingDTO;
 import com.backend1.backend1.exception.BookingConflictException;
 import com.backend1.backend1.exception.BookingValidationException;
@@ -31,6 +33,8 @@ class BookingServiceTest {
     private BookingRepository bookingRepository;
     @Mock
     private RoomRepository roomRepository;
+    @Mock
+    private CustomerClient customerClient;
 
     @InjectMocks
     private BookingService bookingService;
@@ -38,6 +42,11 @@ class BookingServiceTest {
     private final LocalDate TODAY  = LocalDate.of(2025, 6, 1);
     private final LocalDate TMRW   = LocalDate.of(2025, 6, 2);
     private final LocalDate WEEK   = LocalDate.of(2025, 6, 8);
+
+    private void givenActiveCustomer() {
+        when(customerClient.getCustomer(1L)).thenReturn(Optional.of(
+                new CustomerResponse(1L, "Test", "Customer", "test@example.com", null, null, false)));
+    }
 
     private Room buildRoom(Long id, RoomType type, int extraBeds, String price) {
         Room r = new Room();
@@ -120,6 +129,7 @@ class BookingServiceTest {
     @Test
     @DisplayName("save kastar BookingValidationException om gäster överstiger rumskapacitet")
     void save_tooManyGuests_throwsValidationException() {
+        givenActiveCustomer();
 
         // Enkelrum = kapacitet 1, försöker boka 2 gäster
         Room r = buildRoom(1L, RoomType.SINGLE, 0, "800");
@@ -135,6 +145,7 @@ class BookingServiceTest {
     @Test
     @DisplayName("save godkänner bokning när antal gäster är exakt rumskapacitet")
     void save_exactCapacity_succeeds() {
+        givenActiveCustomer();
 
         // Dubbelrum utan extrasängar = kapacitet 2
         Room r = buildRoom(2L, RoomType.DOUBLE, 0, "1200");
@@ -154,6 +165,7 @@ class BookingServiceTest {
     @Test
     @DisplayName("save kastar BookingConflictException om rummet redan är bokat")
     void save_roomAlreadyBooked_throwsConflictException() {
+        givenActiveCustomer();
 
         Room r = buildRoom(1L, RoomType.SINGLE, 0, "800");
 
@@ -172,6 +184,7 @@ class BookingServiceTest {
     @Test
     @DisplayName("save tillåter uppdatering av befintlig bokning (exkluderar sig själv ur konfliktcheck)")
     void save_updateExistingBooking_excludesSelf() {
+        givenActiveCustomer();
 
         Room r = buildRoom(1L, RoomType.SINGLE, 0, "800");
 
@@ -190,6 +203,7 @@ class BookingServiceTest {
     @Test
     @DisplayName("save kastar BookingValidationException om rummet inte finns")
     void save_unknownRoom_throwsValidationException() {
+        givenActiveCustomer();
 
         when(roomRepository.findById(99L)).thenReturn(Optional.empty());
 

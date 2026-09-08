@@ -4,6 +4,8 @@ import com.backend1.backend1.dto.CustomerResponse;
 import com.backend1.backend1.exception.CustomerServiceUnavailableException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
@@ -25,6 +27,13 @@ public class CustomerClient {
         try {
             CustomerResponse customer = restClient.get()
                     .uri(baseUrl + "/api/customers/{id}", customerId)
+                    .headers(headers -> {
+                        // Relay only a token validated by Spring Security, and only to the customer service.
+                        var authentication = SecurityContextHolder.getContext().getAuthentication();
+                        if (authentication instanceof JwtAuthenticationToken jwt && jwt.isAuthenticated()) {
+                            headers.setBearerAuth(jwt.getToken().getTokenValue());
+                        }
+                    })
                     .retrieve()
                     .onStatus(status -> status.value() == 404, (req, resp) -> {
                         // 404 fångas tyst, returnerar null som blir Optional.empty()
@@ -39,4 +48,3 @@ public class CustomerClient {
         }
     }
 }
-
