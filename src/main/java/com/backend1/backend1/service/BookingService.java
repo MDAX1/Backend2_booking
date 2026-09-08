@@ -5,6 +5,8 @@ import com.backend1.backend1.exception.BookingConflictException;
 import com.backend1.backend1.exception.BookingValidationException;
 import com.backend1.backend1.model.Booking;
 import com.backend1.backend1.model.Room;
+import com.backend1.backend1.client.CustomerClient;
+import com.backend1.backend1.dto.CustomerResponse;
 import com.backend1.backend1.repository.BookingRepository;
 import com.backend1.backend1.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +38,18 @@ public class BookingService {
     @Transactional
     public void save(Long bookingId, Long customerId, Long roomId,
                      LocalDate checkIn, LocalDate checkOut, int numberOfGuests) {
+        if (!checkOut.isAfter(checkIn)) {
+            throw new BookingValidationException("Utcheckningsdatum måste vara efter incheckningsdatum");
+        }
+        if (customerId == null) {
+            throw new BookingValidationException("Kund-ID måste anges");
+        }
+        // Verifiera att kunden finns i kundtjänsten
+        CustomerResponse customer = customerClient.getCustomer(customerId)
+                .orElseThrow(() -> new BookingValidationException("Kunden med ID " + customerId + " hittades inte i kundtjänsten"));
+        if (customer.deleted()) {
+            throw new BookingValidationException("Kunden är inaktiv/borttagen och kan inte göra bokningar");
+        }
         if (!checkOut.isAfter(checkIn)) {
             throw new BookingValidationException("Utcheckningsdatum måste vara efter incheckningsdatum");
         }
@@ -88,4 +102,5 @@ public class BookingService {
         dto.setNumberOfGuests(b.getNumberOfGuests());
         return dto;
     }
+    private final CustomerClient customerClient;
 }
