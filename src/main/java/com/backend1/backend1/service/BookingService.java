@@ -103,4 +103,12 @@ public class BookingService {
         return dto;
     }
     private final CustomerClient customerClient;
+
+    @Transactional(readOnly = true)
+    public long countByCustomerIdAndStatus(Long customerId, String status) {
+        if ("ACTIVE".equalsIgnoreCase(status)) {
+            return bookingRepository.countByCustomerIdAndCheckOutGreaterThanEqual(customerId, LocalDate.now());
+        }
+        return bookingRepository.countByCustomerId(customerId);
+    }
 }

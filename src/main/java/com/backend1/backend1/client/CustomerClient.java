@@ -1,10 +1,11 @@
 package com.backend1.backend1.client;
 
 import com.backend1.backend1.dto.CustomerResponse;
+import com.backend1.backend1.exception.CustomerServiceUnavailableException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 import java.util.Optional;
 
@@ -20,19 +21,22 @@ public class CustomerClient {
         this.baseUrl = baseUrl;
     }
 
-    /**
-     * Hämtar en kund från kundtjänsten via GET /api/customers/{id}.
-     * Returnerar Optional.empty() om kunden inte finns (HTTP 404).
-     */
     public Optional<CustomerResponse> getCustomer(Long customerId) {
-        CustomerResponse customer = restClient.get()
-                .uri(baseUrl + "/api/customers/{id}", customerId)
-                .retrieve()
-                .onStatus(status -> status.value() == 404, (req, resp) -> {
-                    // Om 404 (kunden saknas), kasta inget fel här – vi returnerar Optional.empty() nedan
-                })
-                .body(CustomerResponse.class);
+        try {
+            CustomerResponse customer = restClient.get()
+                    .uri(baseUrl + "/api/customers/{id}", customerId)
+                    .retrieve()
+                    .onStatus(status -> status.value() == 404, (req, resp) -> {
+                        // 404 fångas tyst, returnerar null som blir Optional.empty()
+                    })
+                    .body(CustomerResponse.class);
 
-        return Optional.ofNullable(customer);
+            return Optional.ofNullable(customer);
+        } catch (RestClientException e) {
+            // Om kundtjänsten är nere (connection refused, timeout osv) kastar vi 503-felet
+            throw new CustomerServiceUnavailableException(
+                    "Kundtjänsten är inte tillgänglig just nu. Försök igen senare.", e);
+        }
     }
 }
+

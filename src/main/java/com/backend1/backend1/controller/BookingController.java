@@ -6,6 +6,7 @@ import com.backend1.backend1.form.SearchForm;
 import com.backend1.backend1.service.BookingService;
 import com.backend1.backend1.service.RoomService;
 import com.backend1.backend1.service.SearchService;
+import com.backend1.backend1.dto.BookingCountResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -14,6 +15,10 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 
@@ -167,4 +172,21 @@ public class BookingController {
         model.addAttribute("pageTitle", bookingId == null ? "Ny bokning" : "Redigera bokning");
         return "bookings/form";
     }
+
+    @RestController
+    @RequestMapping("/api/bookings")
+    @RequiredArgsConstructor
+    public class BookingApiController {
+        private final BookingService bookingService;
+        /**
+         * Endpoint som kundtjänsten anropar för att kontrollera om kunden
+         * har aktiva bokningar innan kunden raderas.
+         */
+        @GetMapping("/count")
+        public BookingCountResponse count(
+                @RequestParam Long customerId,
+                @RequestParam(required = false, defaultValue = "ACTIVE") String status) {
+            long count = bookingService.countByCustomerIdAndStatus(customerId, status);
+            return new BookingCountResponse(count);
+        }
 }

@@ -16,6 +16,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     long countByCustomerId(Long customerId);
 
+    // Räkna aktiva bokningar (där checkOut är idag eller i framtiden)
+    long countByCustomerIdAndCheckOutGreaterThanEqual(Long customerId, LocalDate checkOut);
+
     long countByRoomIdAndCheckInBeforeAndCheckOutAfter(
             Long roomId, LocalDate checkOut, LocalDate checkIn);
 
