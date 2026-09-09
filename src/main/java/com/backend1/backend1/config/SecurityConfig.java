@@ -26,7 +26,7 @@ public class SecurityConfig {
                         // Sök och lista är bara läsning - ingen token krävs
                         .requestMatchers(HttpMethod.POST, "/bookings/search").permitAll()
                         // Skapa, ändra och avboka ändrar data - kräver giltig token
-                        .requestMatchers(HttpMethod.POST, "/bookings", "/bookings/*", "/bookings/*/delete")
+                        .requestMatchers(HttpMethod.POST, "/bookings", "/bookings/*", "/bookings/*/delete", "/api/bookings")
                         .authenticated()
                         // Allt annat (visning, /api/bookings/count som kundtjänsten anropar, statiska filer)
                         .anyRequest().permitAll())

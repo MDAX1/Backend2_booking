@@ -8,6 +8,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,9 +28,10 @@ public class BookingApiController {
     }
 
     @PostMapping
-    public ResponseEntity<BookingDTO> create(@Valid @RequestBody BookingCreateRequest request) {
+    public ResponseEntity<BookingDTO> create(@Valid @RequestBody BookingCreateRequest request,
+                                             @AuthenticationPrincipal Jwt jwt) {
         Long id = bookingService.save(null, request.customerId(), request.roomId(),
-                request.checkIn(), request.checkOut(), request.numberOfGuests());
+                request.checkIn(), request.checkOut(), request.numberOfGuests(), jwt.getTokenValue());
         return ResponseEntity.status(HttpStatus.CREATED).body(bookingService.findById(id));
     }
 }
