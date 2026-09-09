@@ -17,6 +17,14 @@ public class BookingDTO {
     private LocalDate checkIn;
     private LocalDate checkOut;
     private int numberOfGuests;
+    private String customerFullName;
+
+    public String getCustomerFullName() {
+        if (customerFullName != null && !customerFullName.isBlank()) {
+            return customerFullName;
+        }
+        return customerId != null ? "Kund #" + customerId : "";
+    }
 
     public long getNights() {
         return checkIn != null && checkOut != null ? ChronoUnit.DAYS.between(checkIn, checkOut) : 0;

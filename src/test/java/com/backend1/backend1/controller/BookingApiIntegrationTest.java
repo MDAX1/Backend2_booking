@@ -27,6 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -147,5 +148,24 @@ class BookingApiIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(bookingRequest(1L))))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void countActiveBookings_returnsCount() throws Exception {
+        when(customerClient.getCustomer(eq(1L), any())).thenReturn(Optional.of(validCustomer(1L)));
+
+        // Skapa en bokning
+        mockMvc.perform(post("/api/bookings")
+                        .with(jwt())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(bookingRequest(1L))))
+                .andExpect(status().isCreated());
+
+        // Hämta aktiva bokningar för kund 1
+        mockMvc.perform(get("/api/bookings/count")
+                        .param("customerId", "1")
+                        .param("status", "ACTIVE"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(1));
     }
 }
