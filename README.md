@@ -1,5 +1,30 @@
 # Pensionat Bokningssystem
 
+## Inloggning och skyddade anrop
+
+Webbläsaren loggar in på `/login` mot kundtjänsten. JWT lagras i serverns session,
+sessions-ID byts vid inloggning och token valideras på efterföljande skyddade anrop.
+Utgången token leder tillbaka till inloggningen. Ändringar av rum och bokningar
+kräver autentisering. Sessionsbaserade POST-anrop, inklusive login och logout,
+kräver CSRF-token; Thymeleaf lägger automatiskt till den i formulären med `th:action`.
+Den läsande sökningen `POST /bookings/search` är publik och undantagen från CSRF.
+
+Alla `/api/**`, även `/api/bookings/count`, kräver en explicit
+`Authorization: Bearer <token>`. API:t använder inte webbläsarsessionen och behöver
+ingen CSRF-token. En saknad eller ogiltig token ger 401. Bearer-anrop till de äldre
+formulärendpoints fungerar också utan CSRF-token. Ingen rollbaserad behörighetsmodell används.
+
+Sätt samma Base64-kodade `JWT_SECRET` i de tre tjänsterna. Sätt dessutom
+`CUSTOMER_SERVICE_URL` och `NOTIFICATION_SERVICE_URL` till de andra tjänsternas
+basadresser. I Compose är adresserna `http://customer-service:8080` respektive
+`http://notification-service:8082`; `localhost` når inte en annan container.
+Hemligheter ska tillföras via miljövariabler och inte checkas in.
+
+Kör testerna med Java 21 och `./mvnw test`. `BrowserSecurityTest` använder signerade
+JWT och testar säkerhetsfilter, controllers, formulärens CSRF-token och sessioner
+tillsammans, med mockade serviceberoenden. `BookingApiIntegrationTest` testar
+controller, service och repository mot H2, med mockade externa klienter.
+
 ## Projektbeskrivning
 
 Detta projekt är ett webbaserat bokningssystem utvecklat för ett mindre pensionat. Syftet med systemet är att effektivisera hanteringen av kunder, rum och bokningar genom en användarvänlig webbapplikation byggd med Spring Boot och Thymeleaf.

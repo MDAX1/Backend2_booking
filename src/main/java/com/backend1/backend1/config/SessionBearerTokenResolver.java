@@ -22,6 +22,10 @@ public class SessionBearerTokenResolver implements BearerTokenResolver {
         if (headerToken != null) {
             return headerToken;
         }
+        // An expired session token must not prevent the user from logging in again.
+        if (request.getRequestURI().equals(request.getContextPath() + "/login")) {
+            return null;
+        }
         HttpSession session = request.getSession(false);
         if (session == null) {
             return null;
