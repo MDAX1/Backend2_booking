@@ -13,6 +13,7 @@ import org.springframework.security.oauth2.server.resource.web.DefaultBearerToke
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
@@ -37,8 +38,12 @@ public class SecurityConfig {
     @Order(2)
     SecurityFilterChain browserFilterChain(HttpSecurity http) throws Exception {
         var loginEntryPoint = new LoginUrlAuthenticationEntryPoint("/login");
+        var csrfHandler = new XorCsrfTokenRequestAttributeHandler();
+        // Large Thymeleaf pages may flush before their first form. Create the
+        // CSRF session in the filter, while the session cookie can still be sent.
+        csrfHandler.setCsrfRequestAttributeName(null);
         return http
-                .csrf(csrf -> csrf.ignoringRequestMatchers(
+                .csrf(csrf -> csrf.csrfTokenRequestHandler(csrfHandler).ignoringRequestMatchers(
                         new AntPathRequestMatcher("/bookings/search", "POST")))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/bookings/search").permitAll()
