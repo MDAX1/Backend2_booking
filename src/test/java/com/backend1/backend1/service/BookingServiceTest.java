@@ -1,6 +1,9 @@
 package com.backend1.backend1.service;
 
+import com.backend1.backend1.client.CustomerClient;
+import com.backend1.backend1.client.NotificationClient;
 import com.backend1.backend1.dto.BookingDTO;
+import com.backend1.backend1.dto.CustomerResponse;
 import com.backend1.backend1.exception.BookingConflictException;
 import com.backend1.backend1.exception.BookingValidationException;
 import com.backend1.backend1.model.Booking;
@@ -8,6 +11,7 @@ import com.backend1.backend1.model.Room;
 import com.backend1.backend1.model.RoomType;
 import com.backend1.backend1.repository.BookingRepository;
 import com.backend1.backend1.repository.RoomRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +35,10 @@ class BookingServiceTest {
     private BookingRepository bookingRepository;
     @Mock
     private RoomRepository roomRepository;
+    @Mock
+    private CustomerClient customerClient;
+    @Mock
+    private NotificationClient notificationClient;
 
     @InjectMocks
     private BookingService bookingService;
@@ -38,6 +46,17 @@ class BookingServiceTest {
     private final LocalDate TODAY  = LocalDate.of(2025, 6, 1);
     private final LocalDate TMRW   = LocalDate.of(2025, 6, 2);
     private final LocalDate WEEK   = LocalDate.of(2025, 6, 8);
+    private final String TOKEN = "test-token";
+
+    @BeforeEach
+    void stubValidCustomerByDefault() {
+        // Många av testerna nedan handlar om annat än kundverifiering (kapacitet,
+        // dubbelbokning osv), så vi stubbar en giltig kund som standard. "lenient"
+        // eftersom de två datum-valideringstesterna aldrig når fram till detta anrop.
+        lenient().when(customerClient.getCustomer(anyLong(), anyString()))
+                .thenReturn(Optional.of(
+                        new CustomerResponse(1L, "Test", "Testsson", "test@test.se", "0700000000", "Gata 1", false)));
+    }
 
     private Room buildRoom(Long id, RoomType type, int extraBeds, String price) {
         Room r = new Room();
@@ -103,7 +122,7 @@ class BookingServiceTest {
     @DisplayName("save kastar BookingValidationException om checkOut inte är efter checkIn")
     void save_checkOutBeforeCheckIn_throwsValidationException() {
         assertThatThrownBy(() ->
-                bookingService.save(null, 1L, 1L, WEEK, TODAY, 1))
+                bookingService.save(null, 1L, 1L, WEEK, TODAY, 1, TOKEN))
                 .isInstanceOf(BookingValidationException.class)
                 .hasMessageContaining("Utcheckningsdatum");
     }
@@ -112,7 +131,7 @@ class BookingServiceTest {
     @DisplayName("save kastar BookingValidationException om checkOut är samma dag som checkIn")
     void save_checkOutSameDay_throwsValidationException() {
         assertThatThrownBy(() ->
-                bookingService.save(null, 1L, 1L, TODAY, TODAY, 1))
+                bookingService.save(null, 1L, 1L, TODAY, TODAY, 1, TOKEN))
                 .isInstanceOf(BookingValidationException.class);
     }
 
@@ -127,7 +146,7 @@ class BookingServiceTest {
         when(roomRepository.findById(1L)).thenReturn(Optional.of(r));
 
         assertThatThrownBy(() ->
-                bookingService.save(null, 1L, 1L, TODAY, WEEK, 2))
+                bookingService.save(null, 1L, 1L, TODAY, WEEK, 2, TOKEN))
                 .isInstanceOf(BookingValidationException.class)
                 .hasMessageContaining("person");
     }
@@ -143,9 +162,10 @@ class BookingServiceTest {
 
         when(bookingRepository.countByRoomIdAndCheckInBeforeAndCheckOutAfter(
                 anyLong(), any(), any())).thenReturn(0L);
+        when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
 
         assertThatNoException().isThrownBy(() ->
-                bookingService.save(null, 1L, 2L, TODAY, WEEK, 2));
+                bookingService.save(null, 1L, 2L, TODAY, WEEK, 2, TOKEN));
 
         verify(bookingRepository).save(any(Booking.class));
     }
@@ -164,7 +184,7 @@ class BookingServiceTest {
                 anyLong(), any(), any())).thenReturn(1L);
 
         assertThatThrownBy(() ->
-                bookingService.save(null, 1L, 1L, TODAY, WEEK, 1))
+                bookingService.save(null, 1L, 1L, TODAY, WEEK, 1, TOKEN))
                 .isInstanceOf(BookingConflictException.class)
                 .hasMessageContaining("bokat");
     }
@@ -180,9 +200,10 @@ class BookingServiceTest {
         // countByRoomIdAndCheckInBeforeAndCheckOutAfterAndIdNot ska returnera 0
         when(bookingRepository.countByRoomIdAndCheckInBeforeAndCheckOutAfterAndIdNot(
                 anyLong(), any(), any(), eq(10L))).thenReturn(0L);
+        when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
 
         assertThatNoException().isThrownBy(() ->
-                bookingService.save(10L, 1L, 1L, TODAY, WEEK, 1));
+                bookingService.save(10L, 1L, 1L, TODAY, WEEK, 1, TOKEN));
 
         verify(bookingRepository).save(any(Booking.class));
     }
@@ -194,7 +215,7 @@ class BookingServiceTest {
         when(roomRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() ->
-                bookingService.save(null, 1L, 99L, TODAY, WEEK, 1))
+                bookingService.save(null, 1L, 99L, TODAY, WEEK, 1, TOKEN))
                 .isInstanceOf(BookingValidationException.class)
                 .hasMessageContaining("Rum");
     }
