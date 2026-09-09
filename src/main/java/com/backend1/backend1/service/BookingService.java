@@ -1,12 +1,13 @@
 package com.backend1.backend1.service;
 
+import com.backend1.backend1.client.CustomerClient;
+import com.backend1.backend1.client.NotificationClient;
 import com.backend1.backend1.dto.BookingDTO;
+import com.backend1.backend1.dto.CustomerResponse;
 import com.backend1.backend1.exception.BookingConflictException;
 import com.backend1.backend1.exception.BookingValidationException;
 import com.backend1.backend1.model.Booking;
 import com.backend1.backend1.model.Room;
-import com.backend1.backend1.client.CustomerClient;
-import com.backend1.backend1.dto.CustomerResponse;
 import com.backend1.backend1.repository.BookingRepository;
 import com.backend1.backend1.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,8 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final RoomRepository roomRepository;
+    private final CustomerClient customerClient;
+    private final NotificationClient notificationClient;
 
     @Transactional(readOnly = true)
     public List<BookingDTO> findAll() {
@@ -37,7 +40,7 @@ public class BookingService {
 
     @Transactional
     public Long save(Long bookingId, Long customerId, Long roomId,
-                     LocalDate checkIn, LocalDate checkOut, int numberOfGuests) {
+                     LocalDate checkIn, LocalDate checkOut, int numberOfGuests, String token) {
         if (!checkOut.isAfter(checkIn)) {
             throw new BookingValidationException("Utcheckningsdatum måste vara efter incheckningsdatum");
         }
@@ -45,13 +48,10 @@ public class BookingService {
             throw new BookingValidationException("Kund-ID måste anges");
         }
         // Verifiera att kunden finns i kundtjänsten
-        CustomerResponse customer = customerClient.getCustomer(customerId)
+        CustomerResponse customer = customerClient.getCustomer(customerId, token)
                 .orElseThrow(() -> new BookingValidationException("Kunden med ID " + customerId + " hittades inte i kundtjänsten"));
         if (customer.deleted()) {
             throw new BookingValidationException("Kunden är inaktiv/borttagen och kan inte göra bokningar");
-        }
-        if (!checkOut.isAfter(checkIn)) {
-            throw new BookingValidationException("Utcheckningsdatum måste vara efter incheckningsdatum");
         }
 
         Room room = roomRepository.findById(roomId)
@@ -74,7 +74,11 @@ public class BookingService {
         b.setCheckIn(checkIn);
         b.setCheckOut(checkOut);
         b.setNumberOfGuests(numberOfGuests);
-        return bookingRepository.save(b).getId();
+        Booking saved = bookingRepository.save(b);
+
+        notificationClient.sendBookingConfirmation(customerId, saved.getId(), checkIn, checkOut, token);
+
+        return saved.getId();
     }
 
     @Transactional
@@ -85,6 +89,14 @@ public class BookingService {
     @Transactional(readOnly = true)
     public long count() {
         return bookingRepository.count();
+    }
+
+    @Transactional(readOnly = true)
+    public long countByCustomerIdAndStatus(Long customerId, String status) {
+        if ("ACTIVE".equalsIgnoreCase(status)) {
+            return bookingRepository.countByCustomerIdAndCheckOutGreaterThanEqual(customerId, LocalDate.now());
+        }
+        return bookingRepository.countByCustomerId(customerId);
     }
 
     private BookingDTO toDTO(Booking b) {
@@ -101,14 +113,5 @@ public class BookingService {
         dto.setCheckOut(b.getCheckOut());
         dto.setNumberOfGuests(b.getNumberOfGuests());
         return dto;
-    }
-    private final CustomerClient customerClient;
-
-    @Transactional(readOnly = true)
-    public long countByCustomerIdAndStatus(Long customerId, String status) {
-        if ("ACTIVE".equalsIgnoreCase(status)) {
-            return bookingRepository.countByCustomerIdAndCheckOutGreaterThanEqual(customerId, LocalDate.now());
-        }
-        return bookingRepository.countByCustomerId(customerId);
     }
 }

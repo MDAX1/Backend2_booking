@@ -21,10 +21,11 @@ public class CustomerClient {
         this.baseUrl = baseUrl;
     }
 
-    public Optional<CustomerResponse> getCustomer(Long customerId) {
+    public Optional<CustomerResponse> getCustomer(Long customerId, String token) {
         try {
             CustomerResponse customer = restClient.get()
                     .uri(baseUrl + "/api/customers/{id}", customerId)
+                    .headers(h -> h.setBearerAuth(token))
                     .retrieve()
                     .onStatus(status -> status.value() == 404, (req, resp) -> {
                         // 404 fångas tyst, returnerar null som blir Optional.empty()
@@ -39,4 +40,3 @@ public class CustomerClient {
         }
     }
 }
-

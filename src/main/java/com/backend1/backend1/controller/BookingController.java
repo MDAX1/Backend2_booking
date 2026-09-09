@@ -14,6 +14,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.time.LocalDate;
 
@@ -57,10 +59,11 @@ public class BookingController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkIn,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkOut,
             @RequestParam(defaultValue = "1") int numberOfGuests,
+            @AuthenticationPrincipal Jwt jwt,
             RedirectAttributes redirectAttributes,
             Model model) {
         try {
-            bookingService.save(null, customerId, roomId, checkIn, checkOut, numberOfGuests);
+            bookingService.save(null, customerId, roomId, checkIn, checkOut, numberOfGuests, jwt.getTokenValue());
             redirectAttributes.addFlashAttribute("successMessage", "Bokningen skapades.");
             return "redirect:/bookings";
         } catch (BookingValidationException | BookingConflictException e) {
@@ -91,10 +94,11 @@ public class BookingController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkIn,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkOut,
             @RequestParam(defaultValue = "1") int numberOfGuests,
+            @AuthenticationPrincipal Jwt jwt,
             RedirectAttributes redirectAttributes,
             Model model) {
         try {
-            bookingService.save(id, customerId, roomId, checkIn, checkOut, numberOfGuests);
+            bookingService.save(id, customerId, roomId, checkIn, checkOut, numberOfGuests, jwt.getTokenValue());
             redirectAttributes.addFlashAttribute("successMessage", "Bokningen uppdaterades.");
             return "redirect:/bookings";
         } catch (BookingValidationException | BookingConflictException e) {
