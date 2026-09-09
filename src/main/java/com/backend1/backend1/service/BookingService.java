@@ -36,7 +36,7 @@ public class BookingService {
     }
 
     @Transactional
-    public void save(Long bookingId, Long customerId, Long roomId,
+    public Long save(Long bookingId, Long customerId, Long roomId,
                      LocalDate checkIn, LocalDate checkOut, int numberOfGuests) {
         if (!checkOut.isAfter(checkIn)) {
             throw new BookingValidationException("Utcheckningsdatum måste vara efter incheckningsdatum");
@@ -74,7 +74,7 @@ public class BookingService {
         b.setCheckIn(checkIn);
         b.setCheckOut(checkOut);
         b.setNumberOfGuests(numberOfGuests);
-        bookingRepository.save(b);
+        return bookingRepository.save(b).getId();
     }
 
     @Transactional
