@@ -60,7 +60,7 @@
                 <thead>
                 <tr>
                     <th>#</th>
-                    <th>Kund</th>
+                    <th>Kund-ID</th>
                     <th>Rum</th>
                     <th>Incheckning</th>
                     <th>Utcheckning</th>
@@ -77,7 +77,8 @@
                               th:text="'#' + ${b.id}"></span>
                     </td>
                     <td>
-                        <div class="fw-bold" th:text="${b.customerFullName}"></div>
+                    <td>
+                        <div class="fw-bold" th:text="'Kund #' + ${b.customerId}"></div>
                     </td>
                     <td>
                         <span class="fw-semibold" th:text="${'Rum ' + b.roomNumber}"></span>
