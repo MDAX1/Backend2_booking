@@ -1,6 +1,7 @@
 package com.backend1.backend1.controller;
 
 import com.backend1.backend1.client.CustomerClient;
+import com.backend1.backend1.client.NotificationClient;
 import com.backend1.backend1.dto.CustomerResponse;
 import com.backend1.backend1.exception.CustomerServiceUnavailableException;
 import com.backend1.backend1.model.Room;
@@ -22,7 +23,10 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -42,11 +46,14 @@ class BookingApiIntegrationTest {
     @Autowired
     private BookingRepository bookingRepository;
 
-    // CustomerClient pratar med en riktig extern tjänst (kundtjänsten).
-    // I ett integrationstest av bokningstjänsten ska vi INTE bero på att
-    // den andra tjänsten faktiskt kör – vi mockar den och styr svaret själva.
+    // CustomerClient och NotificationClient pratar med riktiga externa tjänster.
+    // I ett integrationstest av bokningstjänsten ska vi INTE bero på att de
+    // andra tjänsterna faktiskt kör – vi mockar dem och styr svaret själva.
     @MockitoBean
     private CustomerClient customerClient;
+
+    @MockitoBean
+    private NotificationClient notificationClient;
 
     private Room room;
 
@@ -79,9 +86,10 @@ class BookingApiIntegrationTest {
 
     @Test
     void createBooking_validRequest_returns201() throws Exception {
-        when(customerClient.getCustomer(1L)).thenReturn(Optional.of(validCustomer(1L)));
+        when(customerClient.getCustomer(eq(1L), any())).thenReturn(Optional.of(validCustomer(1L)));
 
         mockMvc.perform(post("/api/bookings")
+                        .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(bookingRequest(1L))))
                 .andExpect(status().isCreated())
@@ -91,17 +99,19 @@ class BookingApiIntegrationTest {
 
     @Test
     void createBooking_overlappingDates_returns409() throws Exception {
-        when(customerClient.getCustomer(1L)).thenReturn(Optional.of(validCustomer(1L)));
+        when(customerClient.getCustomer(eq(1L), any())).thenReturn(Optional.of(validCustomer(1L)));
         var request = bookingRequest(1L);
 
         // Första bokningen går igenom
         mockMvc.perform(post("/api/bookings")
+                        .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
 
         // Samma rum, samma datum igen -> konflikt
         mockMvc.perform(post("/api/bookings")
+                        .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict());
@@ -109,9 +119,10 @@ class BookingApiIntegrationTest {
 
     @Test
     void createBooking_unknownCustomer_returns400() throws Exception {
-        when(customerClient.getCustomer(999L)).thenReturn(Optional.empty());
+        when(customerClient.getCustomer(eq(999L), any())).thenReturn(Optional.empty());
 
         mockMvc.perform(post("/api/bookings")
+                        .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(bookingRequest(999L))))
                 .andExpect(status().isBadRequest());
@@ -119,12 +130,22 @@ class BookingApiIntegrationTest {
 
     @Test
     void createBooking_customerServiceDown_returns503() throws Exception {
-        when(customerClient.getCustomer(1L))
+        when(customerClient.getCustomer(eq(1L), any()))
                 .thenThrow(new CustomerServiceUnavailableException("Kundtjänsten är inte tillgänglig just nu."));
 
         mockMvc.perform(post("/api/bookings")
+                        .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(bookingRequest(1L))))
                 .andExpect(status().isServiceUnavailable());
+    }
+
+    @Test
+    void createBooking_noToken_returns401() throws Exception {
+        // Utan giltig JWT ska anropet blockeras innan det ens når vår kod.
+        mockMvc.perform(post("/api/bookings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(bookingRequest(1L))))
+                .andExpect(status().isUnauthorized());
     }
 }

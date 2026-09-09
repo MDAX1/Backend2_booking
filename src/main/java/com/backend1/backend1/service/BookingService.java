@@ -102,6 +102,7 @@ public class BookingService {
     private BookingDTO toDTO(Booking b) {
         BookingDTO dto = new BookingDTO();
         dto.setId(b.getId());
+        dto.setCustomerId(b.getCustomerId());
         if (b.getRoom() != null) {
             dto.setRoomId(b.getRoom().getId());
             dto.setRoomNumber(b.getRoom().getRoomNumber());
