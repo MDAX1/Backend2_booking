@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="sv" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Logga in')}"><title>Pensionat</title></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="bk-page-bar">
+    <div class="container">
+        <h2><i class="bi bi-shield-lock me-2"></i>Logga in</h2>
+        <div class="bk-breadcrumb">
+            <a th:href="@{/}">Hem</a>
+            <span class="sep">/</span>
+            <span>Logga in</span>
+        </div>
+    </div>
+</div>
+
+<main class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+
+            <div class="bk-alert-danger mb-3" th:if="${errorMessage}">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span th:text="${errorMessage}"></span>
+            </div>
+
+            <div class="bk-card">
+                <div class="bk-card-header">
+                    <i class="bi bi-person-lock me-2"></i>Personalinloggning
+                </div>
+                <div class="p-4">
+                    <form method="post" th:action="@{/login}">
+                        <div class="mb-3">
+                            <label class="bk-label" for="username">Användarnamn</label>
+                            <input class="bk-input" type="text" id="username" name="username" required autofocus>
+                        </div>
+                        <div class="mb-3">
+                            <label class="bk-label" for="password">Lösenord</label>
+                            <input class="bk-input" type="password" id="password" name="password" required>
+                        </div>
+                        <button type="submit" class="btn-bk w-100">Logga in</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>
