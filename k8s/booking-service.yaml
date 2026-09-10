@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: booking-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: booking-service
+  template:
+    metadata:
+      labels:
+        app: booking-service
+    spec:
+      containers:
+        - name: booking-service
+          image: booking-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8081
+          env:
+            - name: PGHOST
+              value: booking-db
+            - name: PGPORT
+              value: "5432"
+            - name: PGDATABASE
+              value: bookingdb
+            - name: SPRING_DATASOURCE_USERNAME
+              value: postgres
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: postgres
+            - name: CUSTOMER_SERVICE_URL
+              value: http://customer-service:8080
+            - name: NOTIFICATION_SERVICE_URL
+              value: http://notification-service:8082
+            - name: JWT_SECRET
+              value: "dGVzdGhlbWxpZ2hldC1lbmJhcnQtZm9yLXRlc3Rlci0zMmI="
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: booking-service
+spec:
+  selector:
+    app: booking-service
+  ports:
+    - port: 8081
+      targetPort: 8081
+  type: ClusterIP
