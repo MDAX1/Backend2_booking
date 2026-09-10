@@ -30,6 +30,9 @@ public class LoginController {
                         Model model) {
         try {
             String token = authClient.login(username, password);
+            if (request.getSession(false) != null) {
+                request.changeSessionId();
+            }
             request.getSession(true)
                     .setAttribute(SessionBearerTokenResolver.SESSION_TOKEN_KEY, token);
             return "redirect:/bookings";
